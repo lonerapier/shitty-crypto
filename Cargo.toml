@@ -1,3 +1,8 @@
 [workspace]
-members = ["ff", "hash"]
+members = ["ff", "hash", "ec", "poly"]
 resolver = "2"
+
+[workspace.package]
+repository = "https://github.com/lonerapier/shitty-crypto"
+edition = "2021"
+license = "Apache-2.0"
