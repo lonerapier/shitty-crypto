@@ -22,6 +22,7 @@
 #![warn(missing_docs)]
 
 pub mod curve;
+pub mod dh;
 pub mod ecdsa;
 pub mod field;
 pub mod kzg;

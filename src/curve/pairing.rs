@@ -2,8 +2,11 @@
 
 use super::*;
 
+/// Pairing trait that defines embedding degree and r-torsion subgroup size
 pub trait Pairing: EllipticCurve + PartialEq + std::fmt::Debug {
+  /// embedding degree of the curve, i.e. smallest `k` such that `r|q^k-1`
   const EMBEDDING_DEGREE: usize;
+  /// r-torsion subgroup size, mainly the largest prime factor of curve order
   const R_TORSION_SIZE: usize;
 
   /// Compute the Tate pairing of two points on the curve.
