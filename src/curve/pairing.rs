@@ -2,47 +2,55 @@
 
 use super::*;
 
-/// Compute the Tate pairing of two points on the curve.
-/// The pairing is a bilinear map from G x G -> F_{p^k} where G is the group of R-torsion points on
-/// the curve and F_{p^k} is an extension with embedding degree k. In particular, the second copy of
-/// G is acted on by a map to assure that it is a distinct set of R-torsion points.
-///
-/// ## Arguments
-/// * `const R` - The order of the R-torsion group.
-/// * `p` - The first point in the pairing which must be a point in the R-torsion group.
-/// * `q` - The second point in the pairing which must be a point in the R-torsion group that
-///   generates a distinct "petal" of the R-torsion group.
-///
-/// ## Returns
-/// The result of the pairing.
-///
-/// ## Panics
-/// Panics if either input is not in the R-torsion group via an exhaustive check that the point
-/// added to itself R times is the point itself for both inputs.
-///
-/// ## Notes
-/// This uses the [Miller loop](https://crypto.stanford.edu/pbc/notes/ep/miller.html) algorithm to compute the pairing.
-pub fn pairing<C: EllipticCurve + fmt::Debug + PartialEq, const R: usize>(
-  p: AffinePoint<C>,
-  q: AffinePoint<C>,
-) -> C::BaseField {
-  // Check that both inputs are r torsion points on the curve
-  let mut result = p;
-  for _ in 0..R {
-    result += p;
-  }
-  assert_eq!(result, p);
-  let mut result = q;
-  for _ in 0..R {
-    result += q;
-  }
-  assert_eq!(result, q);
+pub trait Pairing: EllipticCurve + PartialEq + std::fmt::Debug {
+  const EMBEDDING_DEGREE: usize;
+  const R_TORSION_SIZE: usize;
 
-  // Compute the Miller loop
-  let val = miller_loop::<C, R>(p, q);
+  /// Compute the Tate pairing of two points on the curve.
+  /// The pairing is a bilinear map from G x G -> F_{p^k} where G is the group of R-torsion points
+  /// on the curve and F_{p^k} is an extension with embedding degree k. In particular, the second
+  /// copy of G is acted on by a map to assure that it is a distinct set of R-torsion points.
+  ///
+  /// ## Arguments
+  /// * `const R` - The order of the R-torsion group.
+  /// * `p` - The first point in the pairing which must be a point in the R-torsion group.
+  /// * `q` - The second point in the pairing which must be a point in the R-torsion group that
+  ///   generates a distinct "petal" of the R-torsion group.
+  ///
+  /// ## Returns
+  /// The result of the pairing.
+  ///
+  /// ## Panics
+  /// Panics if either input is not in the R-torsion group via an exhaustive check that the point
+  /// added to itself R times is the point itself for both inputs.
+  ///
+  /// ## Notes
+  /// This uses the [Miller loop](https://crypto.stanford.edu/pbc/notes/ep/miller.html) algorithm to compute the pairing.
+  fn pairing(p: AffinePoint<Self>, q: AffinePoint<Self>) -> Self::BaseField
+  where [(); Self::R_TORSION_SIZE]: {
+    // Check that both inputs are r torsion points on the curve
+    let mut result = p;
+    for _ in 0..Self::R_TORSION_SIZE {
+      result += p;
+    }
+    assert_eq!(result, p);
+    let mut result = q;
+    for _ in 0..Self::R_TORSION_SIZE {
+      result += q;
+    }
+    assert_eq!(result, q);
 
-  // Do the final exponentiation
-  val.pow((C::BaseField::ORDER - 1) / R)
+    // Compute the Miller loop
+    let val = miller_loop::<Self, { Self::R_TORSION_SIZE }>(p, q);
+
+    // Do the final exponentiation
+    val.pow((Self::BaseField::ORDER - 1) / Self::R_TORSION_SIZE)
+  }
+}
+
+impl Pairing for PlutoExtendedCurve {
+  const EMBEDDING_DEGREE: usize = 2;
+  const R_TORSION_SIZE: usize = PlutoPrime::Scalar as usize;
 }
 
 pub(crate) fn miller_loop<C: EllipticCurve + fmt::Debug + PartialEq, const R: usize>(
@@ -244,7 +252,7 @@ mod tests {
       panic!("Generator is not a point");
     };
 
-    let result = pairing::<PlutoExtendedCurve, 17>(p, q);
+    let result = PlutoExtendedCurve::pairing(p, q);
     println!("Pairing result: {:?}", result);
 
     assert_eq!(result.pow(17), PlutoBaseFieldExtension::ONE);
@@ -272,9 +280,9 @@ mod tests {
     let a_p = p * a;
     let b_q = q * b;
 
-    let lhs = pairing::<PlutoExtendedCurve, 17>(a_p, b_q);
+    let lhs = PlutoExtendedCurve::pairing(a_p, b_q);
     let ab = a * b;
-    let rhs = pairing::<PlutoExtendedCurve, 17>(p, q).pow(ab.value);
+    let rhs = PlutoExtendedCurve::pairing(p, q).pow(ab.value);
 
     println!("LHS: {:?}", lhs);
     println!("RHS: {:?}", rhs);

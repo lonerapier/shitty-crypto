@@ -31,6 +31,7 @@ pub trait FiniteField:
   + DivAssign
   + Neg<Output = Self>
   + Rem<Output = Self>
+  + From<u32>
   + Hash
   + 'static {
   /// The order of the field, i.e., the number of elements in the field.

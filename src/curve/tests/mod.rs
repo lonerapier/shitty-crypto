@@ -2,7 +2,7 @@ use std::array;
 
 use self::{field::extension::ExtensionField, pairing::miller_loop};
 use super::*;
-use crate::curve::pairing::{line_function, pairing, tangent_line, vertical_line};
+use crate::curve::pairing::{line_function, tangent_line, vertical_line, Pairing};
 
 mod fields;
 use fields::*;
@@ -25,12 +25,13 @@ struct TestCurve;
 impl EllipticCurve for TestCurve {
   type BaseField = TestField;
   type Coefficient = TestField;
+  type ScalarField = TestScalarField;
 
   const EQUATION_A: Self::Coefficient = TestField::ONE;
   const EQUATION_B: Self::Coefficient = TestField::ZERO;
   // In this case, this isn't really the generator for the curve, but rather the generator for the
   // 5-torsion subgroup.
-  const GENERATOR: (Self::BaseField, Self::BaseField) = (TestField::new(25), TestField::new(30));
+  const GENERATOR: AffinePoint<Self> = AffinePoint::Point(TestField::new(25), TestField::new(30));
   const ORDER: usize = 5;
 }
 
@@ -40,12 +41,18 @@ struct TestCurveExtended;
 impl EllipticCurve for TestCurveExtended {
   type BaseField = TestExtension;
   type Coefficient = TestField;
+  type ScalarField = TestScalarField;
 
   const EQUATION_A: Self::Coefficient = TestField::ONE;
   const EQUATION_B: Self::Coefficient = TestField::ZERO;
-  const GENERATOR: (Self::BaseField, Self::BaseField) =
-    (TestExtension::from(34_usize), TestExtension::from(30_usize));
+  const GENERATOR: AffinePoint<Self> =
+    AffinePoint::Point(TestExtension::from(34_usize), TestExtension::from(30_usize));
   const ORDER: usize = 5;
+}
+
+impl Pairing for TestCurveExtended {
+  const EMBEDDING_DEGREE: usize = 2;
+  const R_TORSION_SIZE: usize = 5;
 }
 
 #[test]
@@ -220,7 +227,7 @@ fn pairing_check() {
   println!("P: {:?}", p);
   println!("Q: {:?}", q);
 
-  let f_p_q = pairing::<TestCurveExtended, 5>(p, q);
+  let f_p_q = TestCurveExtended::pairing(p, q);
   println!("f(P,Q) = {:?}", f_p_q);
   assert_eq!(f_p_q, TestExtension::new([TestField::new(42), TestField::new(40)]));
 

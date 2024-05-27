@@ -1,7 +1,8 @@
 //! Does the SRS setup for the KZG10 scheme.
 
-use self::{curve::pairing::pairing, field::prime::PlutoScalarField};
+use self::field::prime::PlutoScalarField;
 use super::*;
+use crate::curve::pairing::Pairing;
 
 /// simple setup to get params.
 #[allow(dead_code, clippy::type_complexity)]
@@ -84,16 +85,12 @@ pub fn check(
   let g2 = g2_srs[1];
 
   // e(pi, g2 - gen * point)
-  let lhs = pairing::<PlutoExtendedCurve, 17>(
-    q,
-    g2 - AffinePoint::<PlutoExtendedCurve>::generator() * point,
-  );
+  let lhs =
+    PlutoExtendedCurve::pairing(q, g2 - AffinePoint::<PlutoExtendedCurve>::generator() * point);
 
   // e(p - g1 * value, gen)
-  let rhs = pairing::<PlutoExtendedCurve, 17>(
-    p - g1 * value,
-    AffinePoint::<PlutoExtendedCurve>::generator(),
-  );
+  let rhs =
+    PlutoExtendedCurve::pairing(p - g1 * value, AffinePoint::<PlutoExtendedCurve>::generator());
   println!("lhs {:?}", lhs);
   println!("rhs {:?}", rhs);
 

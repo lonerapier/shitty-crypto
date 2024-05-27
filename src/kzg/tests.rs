@@ -1,5 +1,5 @@
 use super::*;
-use crate::{curve::pairing::pairing, field::prime::PlutoScalarField};
+use crate::{curve::pairing::Pairing, field::prime::PlutoScalarField};
 
 #[test]
 fn test_setup() {
@@ -191,12 +191,12 @@ fn all_srs_combinations() {
     println!("Loop for g1 {:?}", g1);
     for g2 in &paring_params.g2srs {
       println!("Loop for g2 {:?}", g2);
-      let lhs = pairing::<PlutoExtendedCurve, 17>(
+      let lhs = PlutoExtendedCurve::pairing(
         paring_params.q,
         *g2 - AffinePoint::<PlutoExtendedCurve>::generator() * paring_params.point,
       );
 
-      let rhs = pairing::<PlutoExtendedCurve, 17>(
+      let rhs = PlutoExtendedCurve::pairing(
         paring_params.p - g1 * paring_params.value,
         AffinePoint::<PlutoExtendedCurve>::generator(),
       );
