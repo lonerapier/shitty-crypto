@@ -27,21 +27,23 @@ pub struct PlutoExtendedCurve;
 impl EllipticCurve for PlutoBaseCurve {
   type BaseField = PlutoBaseField;
   type Coefficient = PlutoBaseField;
+  type ScalarField = PlutoScalarField;
 
   const EQUATION_A: Self::Coefficient = PlutoBaseField::ZERO;
   const EQUATION_B: Self::Coefficient = PlutoBaseField::new(3);
-  const GENERATOR: (Self::BaseField, Self::BaseField) =
-    (PlutoBaseField::ONE, PlutoBaseField::new(2));
+  const GENERATOR: AffinePoint<Self> =
+    AffinePoint::Point(PlutoBaseField::ONE, PlutoBaseField::new(2));
   const ORDER: usize = PlutoPrime::Scalar as usize;
 }
 
 impl EllipticCurve for PlutoExtendedCurve {
   type BaseField = PlutoBaseFieldExtension;
   type Coefficient = PlutoBaseField;
+  type ScalarField = PlutoScalarField;
 
   const EQUATION_A: Self::Coefficient = PlutoBaseField::ZERO;
   const EQUATION_B: Self::Coefficient = PlutoBaseField::new(3);
-  const GENERATOR: (Self::BaseField, Self::BaseField) = (
+  const GENERATOR: AffinePoint<Self> = AffinePoint::Point(
     PlutoBaseFieldExtension::new([PlutoBaseField::new(36), PlutoBaseField::ZERO]),
     PlutoBaseFieldExtension::new([PlutoBaseField::ZERO, PlutoBaseField::new(31)]),
   );

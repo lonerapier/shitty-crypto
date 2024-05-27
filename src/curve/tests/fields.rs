@@ -1,6 +1,7 @@
 use super::*;
 
 pub type TestField = PrimeField<59>;
+pub type TestScalarField = PrimeField<5>;
 pub type TestExtension = GaloisField<2, 59>;
 
 impl FiniteField for TestExtension {
