@@ -32,10 +32,10 @@ R.<X> = PolynomialRing(F101)
 # lets pick x^2 + 2 which is irreducible in our field
 
 # Extended polynomial ring
-K.<X> = GF(101**2, modulus = x^2 + 2)
+F2.<X> = GF(101**2, modulus = x^2 + 2)
 
 # Curve group over polynomial ring
-E2 = EllipticCurve(K, [0, 3])
+E2 = EllipticCurve(F2, [0, 3])
 print(E2.points())
 
 # G1 is the generator for E1
@@ -70,4 +70,28 @@ muls  = [(coefs[i] * g1SRS[i]) for i in range(4)]
 commitment = sum(muls)
 print(commitment)
 
+######################################################################
+# weil and tate Pairings
 
+k = 2
+r = 17
+
+a = E2.random_element()
+b = E2.random_element()
+c = E2.random_element()
+a = (a.order()//17)*a
+b = (b.order()//17)*b
+c = (c.order()//17)*c
+print("points", a, b, c)
+
+tate_sage = a.tate_pairing(b, r, k)
+print("tate pairing", tate_sage)
+
+tate_1 = a.tate_pairing(b+c, r, k)
+tate_2 = a.tate_pairing(b, r, k) * a.tate_pairing(c, r, k)
+print(tate_1, tate_2)
+
+weil_sage = a.weil_pairing(b, r)
+print("weil", weil_sage)
+
+######################################################################
